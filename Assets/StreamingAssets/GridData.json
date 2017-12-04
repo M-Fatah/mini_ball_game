@@ -1,0 +1,41 @@
+{
+    "gridElements": [
+        {
+            "element": "width",
+            "value": 10.0
+        },
+        {
+            "element": "height",
+            "value": 10.0
+        },
+        {
+            "element": "projectileSpeed",
+            "value": 10.0
+        },
+        {
+            "element": "turretsNumber",
+            "value": 4
+        }
+    ],
+
+    "turretPositions":
+    [
+        {
+            "x": 7,
+            "y": 8
+        },
+        {
+            "x": 4,
+            "y": 8
+        },
+        {
+            "x": 8,
+            "y": 3
+        },
+        {
+            "x": 2,
+            "y": 5
+        }
+       
+    ]
+}
