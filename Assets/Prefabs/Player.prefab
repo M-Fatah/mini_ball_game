@@ -112,9 +112,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f59d664ca1714b54b955c930e437ef54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 100
+  health: 500
   rollForce: 500
   coinCollectionDistance: 1.5
+  dead: 0
 --- !u!114 &114974448892518182
 MonoBehaviour:
   m_ObjectHideFlags: 1

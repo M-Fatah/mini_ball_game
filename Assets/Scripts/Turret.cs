@@ -7,12 +7,11 @@ public class Turret : MonoBehaviour
 	public Transform turretBody;
 	public Transform turretGunPoint;
 	public float rotationAngle = 135f;
-    public float smoothTime = 30f;
-	public float laserLength = 10f;
+	public float detectionRadius = 2f;
 	[Space(10)]
 	public Bullet bulletPrefab;
 	public float projDmg = 5f;
-	public float projSpeed = 135f;
+	public float projSpeed = 10f;
 	public float timeBetweenShots = 0.5f;
 	public AudioClip gunShotClip;
 	[Space(10)]
@@ -21,6 +20,7 @@ public class Turret : MonoBehaviour
 
 	private float msTimeBetweenShots;
 	private bool playerGotDetected = false;
+	private float physicsSimulationTime = 1f;
 
 	void Start()
 	{
@@ -35,48 +35,32 @@ public class Turret : MonoBehaviour
 
 	}
 
-	void Update()
+	void FixedUpdate()
 	{
-		
-		if(!playerGotDetected)
-		{
-			// Coverage area arc.
-        	float angle = Mathf.PingPong(Time.time * smoothTime, rotationAngle) - (rotationAngle / 2);
-			
-			Quaternion targetRot = Quaternion.Euler(new Vector3(turretBody.eulerAngles.x, angle + transform.eulerAngles.y, turretBody.eulerAngles.z));
-
-			turretBody.rotation = Quaternion.RotateTowards(turretBody.rotation, targetRot, Time.deltaTime * smoothTime);
-		}
-
         if(turretGunPoint)
 		{
-			RaycastHit hit;
-			Ray ray = new Ray(turretGunPoint.position, turretGunPoint.forward);
-			
-			// Laser beam.
-			LineRenderer lineRenderer = GetComponent<LineRenderer>();
-			lineRenderer.positionCount = 2;
-			lineRenderer.SetPosition(0, ray.origin);
-			lineRenderer.SetPosition(1, ray.origin + (turretGunPoint.forward * laserLength));
-			
 			// Coverage area for player detection.
-			playerGotDetected = false;
-			if(Physics.Raycast(ray, out hit, laserLength, raycastMask))
+			Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRadius, raycastMask);
+			
+			if(colliders.Length > 0)
 			{
-				playerGotDetected = true;
+				Player p = colliders[0].GetComponent<Player>();
+				Rigidbody pRigidBody = p.GetComponent<Rigidbody>();
+
+			    Vector3 predictedPos = pRigidBody.position + (pRigidBody.velocity * Time.fixedDeltaTime * 10 * (9 / projSpeed));
+
 				
-				// Rotating the turret towards the player.
-				Vector3 dirToLookAt = hit.collider.transform.position - turretBody.position;
+                // Rotating the turret towards the predicted position of the ball.
+                Vector3 dirToLookAt = predictedPos - turretBody.position;
 				dirToLookAt.y = 0;				
 				turretBody.rotation = Quaternion.LookRotation(dirToLookAt);
 
-				// Do the shooting.
+                // Do the shooting.
                 if(Time.time >= msTimeBetweenShots)
 				{
-					if(!hit.collider.GetComponent<Player>().dead)
+					if(!p.dead)
 					{
 						SoundsManager.instance.PlaySound(gunShotClip, turretGunPoint.position);
-						//SoundsManager.instance.PlaySFX(gunShotClip);
 						Bullet bullet = (Bullet)Instantiate(bulletPrefab, turretGunPoint.position, turretGunPoint.rotation);
 						bullet.SetProjSpeedAndDmg(projSpeed, projDmg);
 						msTimeBetweenShots = Time.time + timeBetweenShots;
